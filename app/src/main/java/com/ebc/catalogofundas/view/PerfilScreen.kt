@@ -1,5 +1,6 @@
 package com.ebc.catalogofundas.view
 
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ebc.catalogofundas.viewmodel.CatalogoViewModel
+import androidx.compose.ui.Alignment
+import com.ebc.catalogofundas.R
+
 
 @Composable
 fun PerfilScreen(
@@ -20,15 +24,24 @@ fun PerfilScreen(
     val favoritas = catalogoViewModel.obtenerFavoritas()
 
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         TextButton(onClick = onVolver) { Text("< Volver") }
 
-        Text("Usuario Demo")
-        Text("Modelo: iPhone 14")
+        Image(
+            painter = painterResource(R.drawable.funda_floral),
+            contentDescription = "Foto",
+            modifier = Modifier
+                .size(560.dp)
+                .padding(bottom = 16.dp)
+        )
+
+        Text("Usuario Cristina")
+        Text("Modelo: iPhone 15 Pro Max")
 
         LazyColumn {
             items(favoritas) { funda ->

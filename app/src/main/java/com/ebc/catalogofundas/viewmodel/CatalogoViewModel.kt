@@ -32,6 +32,8 @@ class CatalogoViewModel : ViewModel() {
         funda?.let {
             it.esFavorita = !it.esFavorita
         }
-
+    }
+    fun obtenerFavoritas(): List<Funda> {
+        return fundas.filter { it.esFavorita }
     }
 }
