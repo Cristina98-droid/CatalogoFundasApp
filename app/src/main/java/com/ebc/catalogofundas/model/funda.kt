@@ -6,5 +6,6 @@ data class Funda(
     val descripcion: String,
     val precio: Double,
     val imagenResId: Int,
-    var esFavorita: Boolean = false
+    var esFavorita: Boolean = false,
+
 )

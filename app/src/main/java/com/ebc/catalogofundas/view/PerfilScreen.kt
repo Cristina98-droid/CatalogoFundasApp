@@ -16,9 +16,15 @@ fun PerfilScreen(
     catalogoViewModel: CatalogoViewModel,
     onVolver: () -> Unit
 ) {
+
     val favoritas = catalogoViewModel.obtenerFavoritas()
 
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+
         TextButton(onClick = onVolver) { Text("< Volver") }
 
         Text("Usuario Demo")
@@ -42,6 +48,7 @@ fun PerfilScreen(
         }
     }
 }
+
 
 
 
