@@ -1,5 +1,6 @@
 package com.ebc.catalogofundas
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +13,7 @@ import com.ebc.catalogofundas.view.CatalogoScreen
 import com.ebc.catalogofundas.view.DetalleScreen
 import com.ebc.catalogofundas.view.LoginScreen
 import com.ebc.catalogofundas.view.PerfilScreen
+import com.ebc.catalogofundas.view.RegistroScreen
 import com.ebc.catalogofundas.viewmodel.CatalogoViewModel
 import com.ebc.catalogofundas.viewmodel.LoginViewModel
 
@@ -21,7 +23,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            CatalogoFundasApp()   // ← AQUÍ SE PINTA TODA LA APP
+            CatalogoFundasApp()
         }
     }
 }
@@ -32,22 +34,50 @@ fun CatalogoFundasApp() {
     val loginVM: LoginViewModel = viewModel()
     val catalogoVM: CatalogoViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = "login") {
-
+    NavHost(
+        navController = navController,
+        startDestination = "login"
+    ) {
+        // LOGIN
         composable("login") {
-            LoginScreen(loginVM) {
-                navController.navigate("catalogo")
-            }
+            LoginScreen(
+                viewModel = loginVM,
+                onLoginExitoso = {
+                    navController.navigate("catalogo") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onCrearCuenta = {
+                    navController.navigate("registro")
+                }
+            )
         }
 
+        // REGISTRO
+        composable("registro") {
+            RegistroScreen(
+                viewModel = loginVM,
+                onRegistroExitoso = {
+                    navController.popBackStack() // vuelve a "login"
+                },
+                onCancelar = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // CATÁLOGO
         composable("catalogo") {
             CatalogoScreen(
                 catalogoViewModel = catalogoVM,
                 onIrPerfil = { navController.navigate("perfil") },
-                onIrDetalle = { id -> navController.navigate("detalle/$id") }
+                onIrDetalle = { id ->
+                    navController.navigate("detalle/$id")
+                }
             )
         }
 
+        // PERFIL
         composable("perfil") {
             PerfilScreen(
                 catalogoViewModel = catalogoVM,
@@ -55,8 +85,9 @@ fun CatalogoFundasApp() {
             )
         }
 
+        // DETALLE
         composable("detalle/{id}") { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id")?.toInt() ?: 0
+            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
             DetalleScreen(
                 idFunda = id,
                 catalogoViewModel = catalogoVM,
@@ -65,3 +96,6 @@ fun CatalogoFundasApp() {
         }
     }
 }
+
+
+

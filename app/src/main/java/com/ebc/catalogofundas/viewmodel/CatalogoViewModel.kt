@@ -1,14 +1,33 @@
 package com.ebc.catalogofundas.viewmodel
 
-
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.ebc.catalogofundas.R
 import com.ebc.catalogofundas.model.Funda
 
+
+data class Usuario(
+    val nombre: String,
+    val modeloTelefono: String,
+    val fotoUri: String? = null
+)
+
 class CatalogoViewModel : ViewModel() {
 
     val fundas = mutableStateListOf<Funda>()
+
+
+    var usuario by mutableStateOf(
+        Usuario(
+            nombre = "Usuario Cristina",
+            modeloTelefono = "iPhone 15 Pro Max",
+            fotoUri = null
+        )
+    )
+        private set
 
     init {
         cargarFundas()
@@ -23,17 +42,29 @@ class CatalogoViewModel : ViewModel() {
         )
     }
 
-    fun obtenerFundaPorId(id: Int): Funda? {
-        return fundas.find { it.id == id }
-    }
+    fun obtenerFundaPorId(id: Int): Funda? = fundas.find { it.id == id }
 
     fun toggleFavorita(id: Int) {
         val funda = obtenerFundaPorId(id)
-        funda?.let {
-            it.esFavorita = !it.esFavorita
-        }
+        funda?.let { it.esFavorita = !it.esFavorita }
     }
-    fun obtenerFavoritas(): List<Funda> {
-        return fundas.filter { it.esFavorita }
+
+    fun obtenerFavoritas(): List<Funda> = fundas.filter { it.esFavorita }
+
+
+    fun actualizarPerfil(nuevoNombre: String, nuevoModelo: String) {
+        usuario = usuario.copy(
+            nombre = nuevoNombre,
+            modeloTelefono = nuevoModelo
+        )
+    }
+
+
+    fun actualizarFotoPerfil(uri: String) {
+        usuario = usuario.copy(fotoUri = uri)
     }
 }
+
+
+
+
