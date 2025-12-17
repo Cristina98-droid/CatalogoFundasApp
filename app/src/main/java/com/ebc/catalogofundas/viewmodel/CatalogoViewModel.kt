@@ -6,49 +6,33 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ebc.catalogofundas.R
 import com.ebc.catalogofundas.model.Funda
 import com.ebc.catalogofundas.model.Usuario
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 class CatalogoViewModel : ViewModel() {
 
     private val fundasOriginales: List<Funda> = listOf(
-        Funda(
-            1,
-            "Funda Anime",
-            "Funda con diseño anime, resistente y de alta calidad.",
-            150.0,
-            R.drawable.funda_anime
-        ),
-        Funda(
-            2,
-            "Funda Floral",
-            "Funda con diseño floral, ideal para un estilo elegante.",
-            149.0,
-            R.drawable.funda_floral
-        ),
-        Funda(
-            3,
-            "Funda Floral Rosa",
-            "Funda floral en tonos rosa, diseño delicado y moderno.",
-            150.0,
-            R.drawable.funda_floral
-        ),
-        Funda(
-            4,
-            "Funda Anime Neon",
-            "Funda anime con colores neón y acabado brillante.",
-            150.0,
-            R.drawable.funda_anime
-        ),
-        Funda(
-            5,
-            "Funda Minimal",
-            "Funda minimalista, diseño limpio y protección básica.",
-            150.0,
-            R.drawable.funda_anime
-        )
+        Funda(1, "Funda Anime", "Funda con diseño anime, resistente y de alta calidad.", 150.0, R.drawable.funda_anime),
+        Funda(2, "Funda Floral", "Funda con diseño floral, ideal para un estilo elegante.", 149.0, R.drawable.funda_floral),
+        Funda(3, "Funda Floral Rosa", "Funda floral en tonos rosa, diseño delicado y moderno.", 150.0, R.drawable.funda_floral),
+        Funda(4, "Funda Anime Neon", "Funda anime con colores neón y acabado brillante.", 150.0, R.drawable.funda_anime),
+        Funda(5, "Funda Minimal", "Funda minimalista, diseño limpio y protección básica.", 150.0, R.drawable.funda_anime)
     )
+
+    // ===============================
+    // Eventos para la UI (notificaciones, etc.)
+    // ===============================
+    private val _uiEvents = MutableSharedFlow<UiEvent>()
+    val uiEvents = _uiEvents.asSharedFlow()
+
+    sealed class UiEvent {
+        data class MostrarNotificacion(val openFavorites: Boolean) : UiEvent()
+    }
 
     // ===============================
     // LiveData del catálogo
@@ -65,9 +49,7 @@ class CatalogoViewModel : ViewModel() {
 
         _fundasLiveData.value =
             if (query.isBlank()) fundasOriginales
-            else fundasOriginales.filter {
-                it.nombre.lowercase().contains(query)
-            }
+            else fundasOriginales.filter { it.nombre.lowercase().contains(query) }
     }
 
     fun obtenerFundaPorId(id: Int): Funda? =
@@ -104,10 +86,19 @@ class CatalogoViewModel : ViewModel() {
     private val favoritosIds = mutableSetOf<Int>()
 
     fun toggleFavorito(idFunda: Int) {
+        val estabaVacio = favoritosIds.isEmpty()
+
         if (favoritosIds.contains(idFunda)) {
             favoritosIds.remove(idFunda)
         } else {
             favoritosIds.add(idFunda)
+
+            // ✅ Notificación SOLO cuando agrega a favoritos por primera vez
+            if (estabaVacio) {
+                viewModelScope.launch {
+                    _uiEvents.emit(UiEvent.MostrarNotificacion(openFavorites = true))
+                }
+            }
         }
     }
 
@@ -117,6 +108,7 @@ class CatalogoViewModel : ViewModel() {
     fun obtenerFavoritas(): List<Funda> =
         fundasOriginales.filter { favoritosIds.contains(it.id) }
 }
+
 
 
 
