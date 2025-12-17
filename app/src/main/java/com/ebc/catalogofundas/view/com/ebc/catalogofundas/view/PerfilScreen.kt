@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
@@ -62,21 +63,22 @@ fun PerfilScreen(
 ) {
     val context = LocalContext.current
 
-    // ✅ ASÍ en tu caso (sin .value)
+    // Usuario del ViewModel (se usa sin .value)
     val usuario = catalogoViewModel.usuario
 
+    // Lista de favoritas desde el ViewModel
     val favoritas = catalogoViewModel.obtenerFavoritas()
 
     var showEditDialog by remember { mutableStateOf(false) }
 
+    // Selector de imagen
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        if (uri != null) {
-            catalogoViewModel.actualizarFotoPerfil(uri.toString())
-        }
+        uri?.let { catalogoViewModel.actualizarFotoPerfil(it.toString()) }
     }
 
+    // Convertimos URI a Bitmap para mostrar la foto
     val fotoBitmap: Bitmap? = remember(usuario.fotoUri) {
         val uriString = usuario.fotoUri ?: return@remember null
         runCatching {
@@ -117,6 +119,7 @@ fun PerfilScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // Foto / icono
             if (fotoBitmap != null) {
                 Image(
                     bitmap = fotoBitmap.asImageBitmap(),
@@ -157,10 +160,10 @@ fun PerfilScreen(
             Text(
                 text = "Mis favoritos",
                 style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.align(Alignment.Start)
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(bottom = 8.dp)
             )
-
-            Spacer(Modifier.height(8.dp))
 
             if (favoritas.isEmpty()) {
                 Text(
@@ -176,6 +179,7 @@ fun PerfilScreen(
                     items(favoritas) { funda ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Row(
@@ -183,14 +187,22 @@ fun PerfilScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Image(
-                                    painter = painterResource(funda.imagenResId),
-                                    contentDescription = funda.titulo,
-                                    modifier = Modifier.size(60.dp)
+                                    painter = painterResource(id = funda.imagenResId),
+                                    contentDescription = funda.nombre,
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(RoundedCornerShape(12.dp))
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Column {
-                                    Text(funda.titulo, style = MaterialTheme.typography.titleSmall)
-                                    Text("$${funda.precio}", style = MaterialTheme.typography.bodyMedium)
+                                    Text(
+                                        text = funda.nombre,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    Text(
+                                        text = "$${funda.precio}",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
                                 }
                             }
                         }
@@ -250,4 +262,5 @@ private fun EditProfileDialog(
         }
     )
 }
+
 

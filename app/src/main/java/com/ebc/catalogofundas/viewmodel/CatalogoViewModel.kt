@@ -1,69 +1,129 @@
 package com.ebc.catalogofundas.viewmodel
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.ebc.catalogofundas.R
 import com.ebc.catalogofundas.model.Funda
-
-
-data class Usuario(
-    val nombre: String,
-    val modeloTelefono: String,
-    val fotoUri: String? = null
-)
+import com.ebc.catalogofundas.model.Usuario
 
 class CatalogoViewModel : ViewModel() {
 
-    val fundas = mutableStateListOf<Funda>()
+    private val fundasOriginales: List<Funda> = listOf(
+        Funda(
+            1,
+            "Funda Anime",
+            "Funda con diseño anime, resistente y de alta calidad.",
+            150.0,
+            R.drawable.funda_anime
+        ),
+        Funda(
+            2,
+            "Funda Floral",
+            "Funda con diseño floral, ideal para un estilo elegante.",
+            149.0,
+            R.drawable.funda_floral
+        ),
+        Funda(
+            3,
+            "Funda Floral Rosa",
+            "Funda floral en tonos rosa, diseño delicado y moderno.",
+            150.0,
+            R.drawable.funda_floral
+        ),
+        Funda(
+            4,
+            "Funda Anime Neon",
+            "Funda anime con colores neón y acabado brillante.",
+            150.0,
+            R.drawable.funda_anime
+        ),
+        Funda(
+            5,
+            "Funda Minimal",
+            "Funda minimalista, diseño limpio y protección básica.",
+            150.0,
+            R.drawable.funda_anime
+        )
+    )
 
+    // ===============================
+    // LiveData del catálogo
+    // ===============================
+    private val _fundasLiveData = MutableLiveData<List<Funda>>(fundasOriginales)
+    val fundasLiveData: LiveData<List<Funda>> = _fundasLiveData
 
-    var usuario by mutableStateOf(
+    private val _terminoBusqueda = MutableLiveData("")
+    val terminoBusqueda: LiveData<String> = _terminoBusqueda
+
+    fun filtrarFundas(texto: String) {
+        _terminoBusqueda.value = texto
+        val query = texto.trim().lowercase()
+
+        _fundasLiveData.value =
+            if (query.isBlank()) fundasOriginales
+            else fundasOriginales.filter {
+                it.nombre.lowercase().contains(query)
+            }
+    }
+
+    fun obtenerFundaPorId(id: Int): Funda? =
+        fundasOriginales.firstOrNull { it.id == id }
+
+    // ===============================
+    // Usuario (Perfil)
+    // ===============================
+    private var _usuario by mutableStateOf(
         Usuario(
-            nombre = "Usuario Cristina",
-            modeloTelefono = "iPhone 15 Pro Max",
+            nombre = "Usuario",
+            modeloTelefono = "iPhone / Android",
             fotoUri = null
         )
     )
-        private set
 
-    init {
-        cargarFundas()
-    }
+    val usuario: Usuario
+        get() = _usuario
 
-    private fun cargarFundas() {
-        fundas.addAll(
-            listOf(
-                Funda(1, "Funda Floral", "Diseño floral elegante", 150.0, R.drawable.funda_floral),
-                Funda(2, "Funda Anime", "Personaje anime popular", 180.0, R.drawable.funda_anime),
-            )
+    fun actualizarPerfil(nombre: String, modelo: String) {
+        _usuario = _usuario.copy(
+            nombre = nombre,
+            modeloTelefono = modelo
         )
     }
-
-    fun obtenerFundaPorId(id: Int): Funda? = fundas.find { it.id == id }
-
-    fun toggleFavorita(id: Int) {
-        val funda = obtenerFundaPorId(id)
-        funda?.let { it.esFavorita = !it.esFavorita }
-    }
-
-    fun obtenerFavoritas(): List<Funda> = fundas.filter { it.esFavorita }
-
-
-    fun actualizarPerfil(nuevoNombre: String, nuevoModelo: String) {
-        usuario = usuario.copy(
-            nombre = nuevoNombre,
-            modeloTelefono = nuevoModelo
-        )
-    }
-
 
     fun actualizarFotoPerfil(uri: String) {
-        usuario = usuario.copy(fotoUri = uri)
+        _usuario = _usuario.copy(fotoUri = uri)
     }
+
+    // ===============================
+    // Favoritos
+    // ===============================
+    private val favoritosIds = mutableSetOf<Int>()
+
+    fun toggleFavorito(idFunda: Int) {
+        if (favoritosIds.contains(idFunda)) {
+            favoritosIds.remove(idFunda)
+        } else {
+            favoritosIds.add(idFunda)
+        }
+    }
+
+    fun esFavorita(idFunda: Int): Boolean =
+        favoritosIds.contains(idFunda)
+
+    fun obtenerFavoritas(): List<Funda> =
+        fundasOriginales.filter { favoritosIds.contains(it.id) }
 }
+
+
+
+
+
+
+
 
 
 
