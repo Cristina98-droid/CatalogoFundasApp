@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebc.catalogofundas.notifications.NotificationHelper
+import com.ebc.catalogofundas.utils.SessionManager
 import com.ebc.catalogofundas.view.CatalogoScreen
 import com.ebc.catalogofundas.view.DetalleScreen
 import com.ebc.catalogofundas.view.LoginScreen
@@ -31,7 +32,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Viene de NotificationHelper cuando el usuario toca la notificación
+        // Extra cuando viene de la notificación
         val openFavorites = intent?.getBooleanExtra("openFavorites", false) ?: false
 
         setContent {
@@ -42,21 +43,24 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CatalogoFundasApp(openFavorites: Boolean) {
+
     val navController = rememberNavController()
     val loginVM: LoginViewModel = viewModel()
     val catalogoVM: CatalogoViewModel = viewModel()
-
     val context = LocalContext.current
 
-    // 1) Crear canal de notificación (una vez)
+    //  Sesión guardada
+    val isLoggedIn = SessionManager.isLoggedIn(context)
+
+    // 1️⃣ Crear canal de notificación
     LaunchedEffect(Unit) {
         NotificationHelper.createChannel(context)
     }
 
-    // 2) Pedir permiso de notificaciones (Android 13+)
+    // 2️⃣ Permiso POST_NOTIFICATIONS (Android 13+)
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { /* no necesitas hacer nada */ }
+        onResult = { }
     )
 
     LaunchedEffect(Unit) {
@@ -72,7 +76,7 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         }
     }
 
-    // 3) Escuchar eventos del ViewModel para mostrar notificación
+    // 3️⃣ Escuchar eventos del ViewModel (notificación)
     LaunchedEffect(Unit) {
         catalogoVM.uiEvents.collectLatest { event ->
             when (event) {
@@ -86,18 +90,24 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         }
     }
 
-    // Ruta a la que queremos ir cuando el usuario toque la notificación
+    // Ruta después del login o notificación
     val routeAfterLogin = if (openFavorites) "perfil" else "catalogo"
+
+
+    val startDestination = if (isLoggedIn) routeAfterLogin else "login"
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = startDestination
     ) {
+
         // LOGIN
         composable("login") {
             LoginScreen(
                 viewModel = loginVM,
                 onLoginExitoso = {
+                    SessionManager.setLoggedIn(context, true)
+
                     navController.navigate(routeAfterLogin) {
                         popUpTo("login") { inclusive = true }
                     }
@@ -112,8 +122,16 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         composable("registro") {
             RegistroScreen(
                 viewModel = loginVM,
-                onRegistroExitoso = { navController.popBackStack() }, // vuelve a "login"
-                onCancelar = { navController.popBackStack() }
+                onRegistroExitoso = {
+                    SessionManager.setLoggedIn(context, true)
+
+                    navController.navigate("catalogo") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onCancelar = {
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -128,11 +146,17 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
             )
         }
 
-        // PERFIL (tu pantalla donde normalmente están favoritos)
+        // PERFIL
         composable("perfil") {
             PerfilScreen(
                 catalogoViewModel = catalogoVM,
-                onVolver = { navController.popBackStack() }
+                onVolver = { navController.popBackStack() },
+                onCerrarSesion = {
+                    SessionManager.logout(context)
+                    navController.navigate("login") {
+                        popUpTo(0)
+                    }
+                }
             )
         }
 
@@ -147,6 +171,7 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         }
     }
 }
+
 
 
 

@@ -53,13 +53,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.ebc.catalogofundas.utils.SessionManager
 import com.ebc.catalogofundas.viewmodel.CatalogoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
     catalogoViewModel: CatalogoViewModel,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onCerrarSesion: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -154,6 +156,18 @@ fun PerfilScreen(
 
             Text(usuario.nombre, style = MaterialTheme.typography.titleMedium)
             Text("Modelo: ${usuario.modeloTelefono}", style = MaterialTheme.typography.bodyMedium)
+
+            // ✅ Botón cerrar sesión
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    SessionManager.logout(context)
+                    onCerrarSesion()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Cerrar sesión")
+            }
 
             Spacer(Modifier.height(20.dp))
 
@@ -262,5 +276,6 @@ private fun EditProfileDialog(
         }
     )
 }
+
 
 
