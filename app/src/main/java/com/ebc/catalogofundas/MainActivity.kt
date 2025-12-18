@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ebc.catalogofundas.data.AppDatabaseHelper
 import com.ebc.catalogofundas.notifications.NotificationHelper
 import com.ebc.catalogofundas.utils.SessionManager
 import com.ebc.catalogofundas.view.CatalogoScreen
@@ -31,6 +32,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ 1) Crear / abrir la BD SQLite (esto crea el archivo .db y las tablas la primera vez)
+        val dbHelper = AppDatabaseHelper(applicationContext)
+        dbHelper.writableDatabase // <-- fuerza la creación
 
         // Extra cuando viene de la notificación
         val openFavorites = intent?.getBooleanExtra("openFavorites", false) ?: false
@@ -92,8 +97,6 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
 
     // Ruta después del login o notificación
     val routeAfterLogin = if (openFavorites) "perfil" else "catalogo"
-
-
     val startDestination = if (isLoggedIn) routeAfterLogin else "login"
 
     NavHost(
@@ -171,6 +174,8 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         }
     }
 }
+
+
 
 
 

@@ -16,6 +16,9 @@ import kotlinx.coroutines.launch
 
 class CatalogoViewModel : ViewModel() {
 
+    // ===============================
+    // Catálogo (datos de prueba)
+    // ===============================
     private val fundasOriginales: List<Funda> = listOf(
         Funda(1, "Funda Anime", "Funda con diseño anime, resistente y de alta calidad.", 150.0, R.drawable.funda_anime),
         Funda(2, "Funda Floral", "Funda con diseño floral, ideal para un estilo elegante.", 149.0, R.drawable.funda_floral),
@@ -25,7 +28,7 @@ class CatalogoViewModel : ViewModel() {
     )
 
     // ===============================
-    // Eventos para la UI (notificaciones, etc.)
+    // Eventos para la UI (notificación)
     // ===============================
     private val _uiEvents = MutableSharedFlow<UiEvent>()
     val uiEvents = _uiEvents.asSharedFlow()
@@ -35,7 +38,7 @@ class CatalogoViewModel : ViewModel() {
     }
 
     // ===============================
-    // LiveData del catálogo
+    // LiveData del catálogo + búsqueda
     // ===============================
     private val _fundasLiveData = MutableLiveData<List<Funda>>(fundasOriginales)
     val fundasLiveData: LiveData<List<Funda>> = _fundasLiveData
@@ -108,6 +111,9 @@ class CatalogoViewModel : ViewModel() {
     fun obtenerFavoritas(): List<Funda> =
         fundasOriginales.filter { favoritosIds.contains(it.id) }
 }
+
+
+
 
 
 
