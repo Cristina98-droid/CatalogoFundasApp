@@ -24,7 +24,7 @@ fun RegistroScreen(
 
     val registroExitoso by viewModel.registroExitoso.observeAsState()
 
-    // Cuando el ViewModel diga que el registro fue exitoso
+
     LaunchedEffect(registroExitoso) {
         if (registroExitoso == true) {
             onRegistroExitoso()

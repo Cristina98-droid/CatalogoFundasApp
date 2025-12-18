@@ -16,9 +16,7 @@ import kotlinx.coroutines.launch
 
 class CatalogoViewModel : ViewModel() {
 
-    // ===============================
-    // Catálogo (datos de prueba)
-    // ===============================
+
     private val fundasOriginales: List<Funda> = listOf(
         Funda(1, "Funda Anime", "Funda con diseño anime, resistente y de alta calidad.", 150.0, R.drawable.funda_anime),
         Funda(2, "Funda Floral", "Funda con diseño floral, ideal para un estilo elegante.", 149.0, R.drawable.funda_floral),
@@ -27,9 +25,7 @@ class CatalogoViewModel : ViewModel() {
         Funda(5, "Funda Minimal", "Funda minimalista, diseño limpio y protección básica.", 150.0, R.drawable.funda_anime)
     )
 
-    // ===============================
-    // Eventos para la UI (notificación)
-    // ===============================
+
     private val _uiEvents = MutableSharedFlow<UiEvent>()
     val uiEvents = _uiEvents.asSharedFlow()
 
@@ -37,9 +33,7 @@ class CatalogoViewModel : ViewModel() {
         data class MostrarNotificacion(val openFavorites: Boolean) : UiEvent()
     }
 
-    // ===============================
-    // LiveData del catálogo + búsqueda
-    // ===============================
+
     private val _fundasLiveData = MutableLiveData<List<Funda>>(fundasOriginales)
     val fundasLiveData: LiveData<List<Funda>> = _fundasLiveData
 
@@ -58,9 +52,7 @@ class CatalogoViewModel : ViewModel() {
     fun obtenerFundaPorId(id: Int): Funda? =
         fundasOriginales.firstOrNull { it.id == id }
 
-    // ===============================
-    // Usuario (Perfil)
-    // ===============================
+
     private var _usuario by mutableStateOf(
         Usuario(
             nombre = "Usuario",
@@ -83,9 +75,7 @@ class CatalogoViewModel : ViewModel() {
         _usuario = _usuario.copy(fotoUri = uri)
     }
 
-    // ===============================
-    // Favoritos
-    // ===============================
+
     private val favoritosIds = mutableSetOf<Int>()
 
     fun toggleFavorito(idFunda: Int) {
@@ -96,7 +86,7 @@ class CatalogoViewModel : ViewModel() {
         } else {
             favoritosIds.add(idFunda)
 
-            // ✅ Notificación SOLO cuando agrega a favoritos por primera vez
+
             if (estabaVacio) {
                 viewModelScope.launch {
                     _uiEvents.emit(UiEvent.MostrarNotificacion(openFavorites = true))

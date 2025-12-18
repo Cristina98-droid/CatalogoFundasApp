@@ -33,9 +33,25 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ 1) Crear / abrir la BD SQLite (esto crea el archivo .db y las tablas la primera vez)
+
         val dbHelper = AppDatabaseHelper(applicationContext)
-        dbHelper.writableDatabase // <-- fuerza la creación
+        val db = dbHelper.writableDatabase
+
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS EvidenciaPantalla (
+                id_evidencia INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre_pantalla TEXT NOT NULL,
+                descripcion TEXT NOT NULL,
+                ruta_imagen TEXT NOT NULL,
+                animacion TEXT,
+                fecha INTEGER NOT NULL
+            );
+            """
+        )
+
+        db.close()
 
         // Extra cuando viene de la notificación
         val openFavorites = intent?.getBooleanExtra("openFavorites", false) ?: false
@@ -54,15 +70,12 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
     val catalogoVM: CatalogoViewModel = viewModel()
     val context = LocalContext.current
 
-    //  Sesión guardada
     val isLoggedIn = SessionManager.isLoggedIn(context)
 
-    // 1️⃣ Crear canal de notificación
     LaunchedEffect(Unit) {
         NotificationHelper.createChannel(context)
     }
 
-    // 2️⃣ Permiso POST_NOTIFICATIONS (Android 13+)
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { }
@@ -81,7 +94,6 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         }
     }
 
-    // 3️⃣ Escuchar eventos del ViewModel (notificación)
     LaunchedEffect(Unit) {
         catalogoVM.uiEvents.collectLatest { event ->
             when (event) {
@@ -95,7 +107,6 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         }
     }
 
-    // Ruta después del login o notificación
     val routeAfterLogin = if (openFavorites) "perfil" else "catalogo"
     val startDestination = if (isLoggedIn) routeAfterLogin else "login"
 
@@ -103,14 +114,11 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         navController = navController,
         startDestination = startDestination
     ) {
-
-        // LOGIN
         composable("login") {
             LoginScreen(
                 viewModel = loginVM,
                 onLoginExitoso = {
                     SessionManager.setLoggedIn(context, true)
-
                     navController.navigate(routeAfterLogin) {
                         popUpTo("login") { inclusive = true }
                     }
@@ -121,13 +129,11 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
             )
         }
 
-        // REGISTRO
         composable("registro") {
             RegistroScreen(
                 viewModel = loginVM,
                 onRegistroExitoso = {
                     SessionManager.setLoggedIn(context, true)
-
                     navController.navigate("catalogo") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -138,32 +144,25 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
             )
         }
 
-        // CATÁLOGO
         composable("catalogo") {
             CatalogoScreen(
                 catalogoViewModel = catalogoVM,
                 onIrPerfil = { navController.navigate("perfil") },
-                onIrDetalle = { id ->
-                    navController.navigate("detalle/$id")
-                }
+                onIrDetalle = { id -> navController.navigate("detalle/$id") }
             )
         }
 
-        // PERFIL
         composable("perfil") {
             PerfilScreen(
                 catalogoViewModel = catalogoVM,
                 onVolver = { navController.popBackStack() },
                 onCerrarSesion = {
                     SessionManager.logout(context)
-                    navController.navigate("login") {
-                        popUpTo(0)
-                    }
+                    navController.navigate("login") { popUpTo(0) }
                 }
             )
         }
 
-        // DETALLE
         composable("detalle/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
             DetalleScreen(
@@ -174,6 +173,9 @@ fun CatalogoFundasApp(openFavorites: Boolean) {
         }
     }
 }
+
+
+
 
 
 

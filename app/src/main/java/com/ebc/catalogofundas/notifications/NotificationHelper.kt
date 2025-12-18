@@ -17,10 +17,7 @@ object NotificationHelper {
 
     const val CHANNEL_ID = "catalogo_fundas_channel"
 
-    /**
-     * Crear el canal de notificaciones (obligatorio Android 8+)
-     * Llamar una sola vez (ej. en MainActivity)
-     */
+
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -37,10 +34,7 @@ object NotificationHelper {
         }
     }
 
-    /**
-     * Muestra la notificación de estilo / favoritos
-     * Requiere permiso POST_NOTIFICATIONS (Android 13+)
-     */
+
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showStyleNotification(
         context: Context,

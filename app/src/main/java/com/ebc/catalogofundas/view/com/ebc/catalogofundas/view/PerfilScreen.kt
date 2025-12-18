@@ -65,22 +65,22 @@ fun PerfilScreen(
 ) {
     val context = LocalContext.current
 
-    // Usuario del ViewModel (se usa sin .value)
+
     val usuario = catalogoViewModel.usuario
 
-    // Lista de favoritas desde el ViewModel
+
     val favoritas = catalogoViewModel.obtenerFavoritas()
 
     var showEditDialog by remember { mutableStateOf(false) }
 
-    // Selector de imagen
+
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let { catalogoViewModel.actualizarFotoPerfil(it.toString()) }
     }
 
-    // Convertimos URI a Bitmap para mostrar la foto
+
     val fotoBitmap: Bitmap? = remember(usuario.fotoUri) {
         val uriString = usuario.fotoUri ?: return@remember null
         runCatching {
@@ -121,7 +121,7 @@ fun PerfilScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // Foto / icono
+
             if (fotoBitmap != null) {
                 Image(
                     bitmap = fotoBitmap.asImageBitmap(),
@@ -157,7 +157,7 @@ fun PerfilScreen(
             Text(usuario.nombre, style = MaterialTheme.typography.titleMedium)
             Text("Modelo: ${usuario.modeloTelefono}", style = MaterialTheme.typography.bodyMedium)
 
-            // ✅ Botón cerrar sesión
+            //  Botón cerrar sesión
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = {

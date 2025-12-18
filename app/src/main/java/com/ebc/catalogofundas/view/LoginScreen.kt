@@ -24,7 +24,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var mostrarError by remember { mutableStateOf(false) }
 
-    // ANIMACIÓN TÍTULO
+
     var startAnim by remember { mutableStateOf(false) }
     val escala by animateFloatAsState(
         targetValue = if (startAnim) 1f else 0.8f,

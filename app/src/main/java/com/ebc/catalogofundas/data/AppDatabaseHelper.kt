@@ -9,14 +9,14 @@ class AppDatabaseHelper(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "catalogo_fundas.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 4
     }
 
     override fun onCreate(db: SQLiteDatabase) {
 
         db.execSQL(
             """
-            CREATE TABLE Usuario (
+            CREATE TABLE IF NOT EXISTS Usuario (
                 id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL,
                 correo TEXT NOT NULL UNIQUE,
@@ -29,7 +29,7 @@ class AppDatabaseHelper(context: Context) :
 
         db.execSQL(
             """
-            CREATE TABLE Categoria (
+            CREATE TABLE IF NOT EXISTS Categoria (
                 id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL
             );
@@ -38,7 +38,7 @@ class AppDatabaseHelper(context: Context) :
 
         db.execSQL(
             """
-            CREATE TABLE Funda (
+            CREATE TABLE IF NOT EXISTS Funda (
                 id_funda INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL,
                 descripcion TEXT,
@@ -52,7 +52,7 @@ class AppDatabaseHelper(context: Context) :
 
         db.execSQL(
             """
-            CREATE TABLE Favorito (
+            CREATE TABLE IF NOT EXISTS Favorito (
                 id_favorito INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_usuario INTEGER NOT NULL,
                 id_funda INTEGER NOT NULL,
@@ -63,14 +63,37 @@ class AppDatabaseHelper(context: Context) :
             );
             """
         )
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS EvidenciaPantalla (
+                id_evidencia INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre_pantalla TEXT NOT NULL,
+                descripcion TEXT NOT NULL,
+                ruta_imagen TEXT NOT NULL,
+                animacion TEXT,
+                fecha INTEGER NOT NULL
+            );
+            """
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS Favorito")
-        db.execSQL("DROP TABLE IF EXISTS Funda")
-        db.execSQL("DROP TABLE IF EXISTS Categoria")
-        db.execSQL("DROP TABLE IF EXISTS Usuario")
-        onCreate(db)
+
+        if (oldVersion < 3) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS EvidenciaPantalla (
+                    id_evidencia INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nombre_pantalla TEXT NOT NULL,
+                    descripcion TEXT NOT NULL,
+                    ruta_imagen TEXT NOT NULL,
+                    animacion TEXT,
+                    fecha INTEGER NOT NULL
+                );
+                """
+            )
+        }
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -78,3 +101,4 @@ class AppDatabaseHelper(context: Context) :
         db.setForeignKeyConstraintsEnabled(true)
     }
 }
+

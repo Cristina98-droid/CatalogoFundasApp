@@ -6,9 +6,7 @@ import androidx.lifecycle.ViewModel
 
 class LoginViewModel : ViewModel() {
 
-    // ===============================
-    // Estados observables por la UI
-    // ===============================
+
     private val _loginExitoso = MutableLiveData(false)
     val loginExitoso: LiveData<Boolean> = _loginExitoso
 
@@ -16,14 +14,12 @@ class LoginViewModel : ViewModel() {
     val registroExitoso: LiveData<Boolean> = _registroExitoso
 
 
-    // Usuario simulado en memoria
+
 
     private var correoRegistrado: String? = null
     private var passwordRegistrado: String? = null
 
-    // ===============================
-    // Registro de usuario
-    // ===============================
+
     fun registrar(correo: String, password: String) {
         if (correo.isNotBlank() && password.isNotBlank()) {
             correoRegistrado = correo
