@@ -10,7 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,8 +18,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebc.catalogofundas.model.Funda
 import com.ebc.catalogofundas.viewmodel.CatalogoViewModel
+import com.ebc.catalogofundas.viewmodel.TipoCambioViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -32,6 +34,15 @@ fun CatalogoScreen(
 ) {
     val fundas = catalogoViewModel.fundasLiveData.observeAsState(initial = emptyList())
     val termino = catalogoViewModel.terminoBusqueda.observeAsState(initial = "")
+
+    // ✅ ViewModel del tipo de cambio
+    val tipoCambioVM: TipoCambioViewModel = viewModel()
+    val resultado by tipoCambioVM.resultado.collectAsState()
+    val cargando by tipoCambioVM.cargando.collectAsState()
+    val error by tipoCambioVM.error.collectAsState()
+
+    // 🔑 Pega aquí tu TOKEN real de Banxico
+    val tokenBanxico = "AQUI_TU_TOKEN"
 
     Scaffold(
         topBar = {
@@ -63,6 +74,27 @@ fun CatalogoScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // ✅ Botón Banxico + resultado
+            Button(
+                onClick = { tipoCambioVM.consultar(tokenBanxico) },
+                enabled = !cargando,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (cargando) "Consultando..." else "Consultar tipo de cambio (Banxico)")
+            }
+
+            if (resultado != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Tipo de cambio: $resultado")
+            }
+
+            if (error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Error: $error")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -70,7 +102,7 @@ fun CatalogoScreen(
                 items(fundas.value) { funda ->
                     FundaItem(
                         funda = funda,
-                        onClick = { onIrDetalle(funda.id) } // <- ENVÍA ID a la ruta detalle/{id}
+                        onClick = { onIrDetalle(funda.id) }
                     )
                 }
             }
@@ -118,4 +150,5 @@ private fun FundaItem(
         }
     }
 }
+
 
